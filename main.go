@@ -154,7 +154,7 @@ func main() {
 		case "me":
 			me_output := strings.Join(opts[2:], " ")
 			s.ChannelMessageSend(m.ChannelID, "@" + m.Author.GlobalName + " " + me_output)
-		    s.ChannelMessageDelete(m.ChannelID, m.ID)
+			s.ChannelMessageDelete(m.ChannelID, m.ID)
 
 			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran command 'me ", opts[2:], "'")
 
@@ -165,7 +165,8 @@ func main() {
 			"- ``!nb cows`` - outputs list of valid cows",
 			"- ``!nb figlet <phrase>`` - outputs figlet with ``<phrase>``",
 			"- ``!nb greentext <phrase>`` - outputs a greentext with ``<phrase>``",
-			"- ``!nb me <phrase>`` - outputs an IRC-esque /me with ``<phrase>``"}
+			"- ``!nb me <phrase>`` - outputs an IRC-esque /me with ``<phrase>``",
+			"- ``!nb avatar`` - returns URL of user avatar"}
 
 			help_output := strings.Join(output_strings[:], "\n")
 			s.ChannelMessageSend(m.ChannelID, help_output)
