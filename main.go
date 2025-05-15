@@ -19,7 +19,7 @@ const prefix string = "!nb" // prefix for all commands, bot will ignore any mess
 const botbanrole string = "1372358865412292689" // if user has this role ID, the bot will ignore any command they send
 
 // modify this to filter the allowed cows
-// by default this just corresponds to the cows that void linux,
+// by default this just corresponds to the cows that void linux
 // cowsay provides by default, with "default" removed because it's redundant
 var available_cows = []string{"beavis.zen", "blowfish", "bong", "bud-frogs", "bunny", "cheese", "cower", "daemon", "dragon",
 "dragon-and-cow", "elephant", "elephant-in-snake", "eyes", "flaming-sheep", "ghostbusters",
