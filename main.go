@@ -30,7 +30,8 @@ var available_cows = []string{"beavis.zen", "blowfish", "bong", "bud-frogs", "bu
 func main() {
 	// i'm watching you
 	// logfile should populate in the location the bot is run at
-	f, err := os.OpenFile("nixbot.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	homedir := os.Getenv("HOME")
+	f, err := os.OpenFile(homedir + "/nixbot.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("nixbot: cannot open log file '", err, "'")
 	}
