@@ -27,9 +27,25 @@ var available_cows = []string{"beavis.zen", "blowfish", "bong", "bud-frogs", "bu
 "mutilated", "ren", "satanic", "sheep", "skeleton", "small", "stegosaurus", "stimpy", "supermilker",
 "surgery", "three-eyes", "turkey", "turtle", "tux", "udder", "vader", "vader-koala", "www"}
 
+func checkInput(r []rune) bool {
+	// used by cowsay and figlet to restrict codeblocks primarily
+	// so that their codeblock doesn't get an early termination by a user
+	// in order to ping people or otherwise via the bot
+	// can append more runes to this to restrict more characters
+	var disallowed_characters = []rune{'`'}
+
+	for _, rune_value := range r {
+		if slices.Contains(disallowed_characters, rune_value) {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
 	// i'm watching you
-	// logfile should populate in the location the bot is run at
+	// this bot is intended to be run as a service, typically with its HOME being set to /var/lib/nixbot
+	// both the executable and this logfile should be stored there
 	homedir := os.Getenv("HOME")
 	f, err := os.OpenFile(homedir + "/nixbot.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
@@ -62,6 +78,11 @@ func main() {
 			return
 		}
 
+		if len(opts) < 2 {
+			s.ChannelMessageSend(m.ChannelID, "not enough arguments:\nexpected ``!nb <option>``")
+			return
+		}
+
 		if slices.Contains(m.Member.Roles, botbanrole) {
 			log.Print("nixbot: botbanned user '", m.Author.Username, m.Author.ID, "' attempted to run command ", opts[1:])
 			return
@@ -69,9 +90,7 @@ func main() {
 
 		switch command := opts[1]; command {
 		case "fortune":
-			const fortunebin string = "/usr/sbin/fortune"
-
-			fortune_output := exec.Command(fortunebin)
+			fortune_output := exec.Command("/usr/sbin/fortune")
 			stdout, err := fortune_output.Output()
 
 			if err != nil {
@@ -83,6 +102,12 @@ func main() {
 			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran command [fortune]")
 
 		case "cowsay":
+			opt_runes := []rune(strings.Join(opts[2:], " "))
+			if !checkInput(opt_runes) {
+				s.ChannelMessageSend(m.ChannelID, "illegal character in prompt")
+				return
+			}
+
 			// make sure we actually have enough opts so the bot doesn't crash
 			if len(opts) < 3 {
 				s.ChannelMessageSend(m.ChannelID, "not enough arguments:\nexpected ``!nb cowsay <phrase>`` or ``nb cowsay --<cow> <phrase>``")
@@ -132,6 +157,17 @@ func main() {
 			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran command [cows]")
 
 		case "figlet":
+			if len(opts) < 3 {
+				s.ChannelMessageSend(m.ChannelID, "not enough arguments:\nexpected ``!nb figlet <phrase>``")
+				return
+			}
+
+			opt_runes := []rune(strings.Join(opts[2:], " "))
+			if !checkInput(opt_runes) {
+				s.ChannelMessageSend(m.ChannelID, "illegal character in prompt")
+				return
+			}
+
 			cmd := exec.Command("/usr/sbin/figlet")
 			string := strings.Join(opts[2:], " ")
 			cmd.Stdin = strings.NewReader(string)
@@ -154,7 +190,7 @@ func main() {
 
 		case "me":
 			me_output := strings.Join(opts[2:], " ")
-			s.ChannelMessageSend(m.ChannelID, "@" + m.Author.GlobalName + " " + me_output)
+			s.ChannelMessageSend(m.ChannelID, "<@" + m.Author.ID + "> " + me_output)
 			s.ChannelMessageDelete(m.ChannelID, m.ID)
 
 			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran command 'me ", opts[2:], "'")
@@ -177,6 +213,9 @@ func main() {
 		case "avatar":
 			avatar_output := m.Author.AvatarURL("")
 			s.ChannelMessageSend(m.ChannelID, avatar_output)
+
+		default:
+			s.ChannelMessageSend(m.ChannelID, "invalid option:\nsee ``!nb help`` for valid options")
 		}
 	})
 
