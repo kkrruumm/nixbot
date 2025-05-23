@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"io"
 	"slices"
+	"math/rand"
+	"strconv"
 )
 
 // feel free to tweak these if you're forking
@@ -58,14 +60,12 @@ func main() {
 	split_log := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(split_log)
 
-	log.Print("nixbot: attempting to authenticate with discord")
 	// set this via .profile for the bot user
 	token := os.Getenv("NIXBOT_TOKEN")
 	session, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("nixbot: authenticated with discord successfully")
 
 	session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if m.Author.ID == s.State.User.ID {
@@ -203,7 +203,8 @@ func main() {
 			"- ``!nb figlet <phrase>`` - outputs figlet with ``<phrase>``",
 			"- ``!nb greentext <phrase>`` - outputs a greentext with ``<phrase>``",
 			"- ``!nb me <phrase>`` - outputs an IRC-esque /me with ``<phrase>``",
-			"- ``!nb avatar`` - returns URL of user avatar"}
+			"- ``!nb avatar`` - returns URL of user avatar",
+			"- ``!nb xkcd`` - returns URL of a random xkcd comic"}
 
 			help_output := strings.Join(output_strings[:], "\n")
 			s.ChannelMessageSend(m.ChannelID, help_output)
@@ -214,8 +215,18 @@ func main() {
 			avatar_output := m.Author.AvatarURL("")
 			s.ChannelMessageSend(m.ChannelID, avatar_output)
 
+		case "xkcd":
+			xkcd_number := strconv.Itoa(rand.Intn(3092 - 1))
+			xkcd_output := "https://xkcd.com/" + xkcd_number
+
+			s.ChannelMessageSend(m.ChannelID, string(xkcd_output))
+
+			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran command [xkcd]")
+
 		default:
 			s.ChannelMessageSend(m.ChannelID, "invalid option:\nsee ``!nb help`` for valid options")
+
+			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran invalid command ", opts[1:])
 		}
 	})
 
