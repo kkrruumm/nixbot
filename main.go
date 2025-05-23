@@ -219,7 +219,7 @@ func main() {
 			xkcd_number := strconv.Itoa(rand.Intn(3092 - 1))
 			xkcd_output := "https://xkcd.com/" + xkcd_number
 
-			s.ChannelMessageSend(m.ChannelID, string(xkcd_output))
+			s.ChannelMessageSend(m.ChannelID, xkcd_output)
 
 			log.Print("nixbot: user '", m.Author.Username, ":", m.Author.ID, "' ran command [xkcd]")
 
